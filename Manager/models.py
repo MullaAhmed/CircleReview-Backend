@@ -1,6 +1,6 @@
 from django.db import models
 from Employee.models import *
-from django.contrib.postgres.fields import ArrayField
+
 
 class FeedbackForm(models.Model):
     company_name=models.CharField(max_length=50)
