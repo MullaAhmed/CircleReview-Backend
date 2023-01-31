@@ -1,0 +1,5 @@
+ERRORS:
+Employee.Team.team_members: (fields.E305) Reverse query name for 'Employee.Team.team_members' clashes with reverse query name for 'Employee.Team.team_lead'.
+        HINT: Add or change a related_name argument to the definition for 'Employee.Team.team_members' or 'Employee.Team.team_lead'.
+
+ask about 2 paparmeters in url
