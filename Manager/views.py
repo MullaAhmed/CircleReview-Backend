@@ -30,11 +30,11 @@ class FeedbackFormView(APIView,mixins.UpdateModelMixin):
         if id==0:
             queryset = FeedbackForm.objects.filter(Q(company_name=company) & Q(status="Active"))
             serializer = FeedbackFormSerializer(queryset,many=True)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
             queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
             serializer = FeedbackFormSerializer(queryset)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=401)
 
     def post(self,request, *args, **kwargs):
         data=request.data
@@ -48,9 +48,9 @@ class FeedbackFormView(APIView,mixins.UpdateModelMixin):
             create_feedback(data,obj.id) #later async
             send_email_team(data['people']) #later async
 
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
-            return response.Response(serializer.errors)
+            return response.Response(serializer.errors,status=401)
 
 
     def put(self, request, *args, **kwargs):
@@ -61,9 +61,9 @@ class FeedbackFormView(APIView,mixins.UpdateModelMixin):
         if serializer.is_valid():
             serializer.save()
             
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
-            return response.Response(serializer.errors)
+            return response.Response(serializer.errors,status=401)
 
 
 class FeedbackView(APIView):
@@ -73,11 +73,11 @@ class FeedbackView(APIView):
         if id==0:
             queryset = Feedback.objects.all()
             serializer = FeedbackSerializer(queryset,many=True)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
             queryset= Feedback.objects.get(id=id)
             serializer = FeedbackSerializer(queryset)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=401)
         
 
 class NominationsView(APIView):
@@ -109,11 +109,11 @@ class NominationsView(APIView):
                     print("yess")
                     temp_Serializer.save()
                 else:
-                    return response.Response(temp_Serializer.errors)
+                    return response.Response(temp_Serializer.errors,status=401)
 
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
-            return response.Response(serializer.errors)
+            return response.Response(serializer.errors,status=401)
 
 
 class EditFeedbackView(APIView):
@@ -128,7 +128,7 @@ class EditFeedbackView(APIView):
         
         
         serializer = FeedbackSerializer(queryset)
-        return response.Response(serializer.data[review_type])
+        return response.Response(serializer.data[review_type],status=200)
         
 
     def put(self,request, *args, **kwargs):
@@ -148,9 +148,9 @@ class EditFeedbackView(APIView):
         if serializer.is_valid():
 
             serializer.save()
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         else:
-            return response.Response(serializer.errors)
+            return response.Response(serializer.errors,status=401)
 
 
 class RemainderEmailView(APIView):
@@ -164,7 +164,7 @@ class RemainderEmailView(APIView):
         serializers = FeedbackFormSerializer(form)
         send_remainder_emails(serializers.data['people'],team_lead.email)
         
-        return response.Response("Done")
+        return response.Response({"message":"successfully sent"},status=200)
         
 
 class ReportView(APIView):

@@ -3,6 +3,7 @@ from Employee.models import *
 
 
 class FeedbackForm(models.Model):
+    survey_name=models.CharField(max_length=100,default="Feedback Form")
     company_name=models.CharField(max_length=50)
     time=models.DateTimeField(auto_now_add=True)
     team=models.CharField(max_length=100) # Can be replaced by Department name as a foregin key

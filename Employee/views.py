@@ -21,14 +21,14 @@ class UserProfileView(APIView):
         else:
             user=UserProfile.objects.get(Q(id=id) & Q(company_name=company))
             serializer=UserProfileSerializer(user)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
 
     def post(self,request,*args, **kwargs):
         serializer=UserProfileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return response.Response(serializer.data)
-        return response.Response(serializer.errors,status=400)
+            return response.Response(serializer.data,status=200)
+        return response.Response(serializer.errors,status=401)
 
     def put(self,request,*args, **kwargs):
         id=self.kwargs.get(self.lookup_id)
@@ -40,7 +40,7 @@ class UserProfileView(APIView):
         if serializer.is_valid():
             print(dict(serializer.validated_data))
             serializer.save()
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         return response.Response(serializer.errors,status=400)
 
 
@@ -59,7 +59,7 @@ class TeamView(APIView):
         else:
             user=Team.objects.get(Q(id=id) & Q(company_name=company))
             serializer=TeamSerializer(user)
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
 
     def post(self,request,*args, **kwargs):
         serializer=TeamSerializer(data=request.data)
@@ -67,7 +67,7 @@ class TeamView(APIView):
         if serializer.is_valid():
             
             serializer.save()
-            return response.Response(serializer.data)
+            return response.Response(serializer.data,status=200)
         return response.Response(serializer.errors,status=400)
 
 

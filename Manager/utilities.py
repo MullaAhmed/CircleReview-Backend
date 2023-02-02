@@ -31,12 +31,12 @@ def send_remainder_emails(people,manager):
     
     send_mail( subject, message, email_from, recipient_list ) 
 
-def create_feedback(data,id):
+def create_feedback(og_data,id):
     
-    for i in data['people']:
+    for i in og_data['people']:
         data={
             "employee_name":i,
-            "company_name":data['company_name'],
+            "company_name":og_data['company_name'],
             "feedback_form":id,
             
             "status":{
@@ -54,17 +54,17 @@ def create_feedback(data,id):
                 "external_review":"Pending"
         },
 
-            "self_review":data['self_review'],
-            "peer_review":data['peer_review'],
-            "manager_review":data['manager_review'],
-            "hr_review":data['hr_review'],
-            "external_review":data['external_review']
+            "self_review":og_data['self_review'],
+            "peer_review":og_data['peer_review'],
+            "manager_review":og_data['manager_review'],
+            "hr_review":og_data['hr_review'],
+            "external_review":og_data['external_review']
         }
     
         serializer = FeedbackSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            update_userprofile(data['people'],"self_review","Pending")
+            update_userprofile(og_data['people'],"self_review","Pending")
 
             print("done")
         else:
