@@ -2,7 +2,8 @@ from django.conf import settings
 from Employee.models import *
 from django.core.mail import send_mail
 from .models import *
-from.serializers import *
+from .serializers import *
+from Employee.serializers import *
 from django.db.models import Q # Multi crteria queries
 
 
@@ -63,21 +64,18 @@ def create_feedback(data,id):
         serializer = FeedbackSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            update_userprofile(data['people'],"self_review","Pending")
+
             print("done")
         else:
             print(serializer.errors)
         
-def get_nominations(id):
 
-    employee=UserProfile.objects.get(id=id)
-    team=Team.objects.get(Q(team_name=employee.team_name) & Q(company_name=employee.company_name))
-    manager=UserProfile.objects.get(Q(name=team.team_lead) & Q(company_name=employee.company_name))
-    
-    return 
-
-""""nominations":{
-                "peer_review":"Pending",
-                "manager_review":"Pending",
-                "hr_review":"Pending",
-                "external_review":"Pending"
-        }"""
+def update_userprofile(people,review_type,status):
+    for i in people:
+        user=UserProfile.objects.get(id=int(i))
+        user.review_status[review_type]=status
+        serializer=UserProfileSerializer(user,data=user)
+        if serializer.is_valid():
+            serializer.save()
+        

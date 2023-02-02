@@ -9,9 +9,15 @@ import csv
 from Employee.serializers import *
 from django.http import HttpResponse
 from django.db.models import Q # Multi crteria queries
+# Charts
+import xlwings as xw
+import xlwt
+import pandas as pd
+import matplotlib.pyplot as plt  # pip install matplotlib
+
+
+
 # Create your views here.
-
-
 
 class FeedbackFormView(APIView,mixins.UpdateModelMixin):
     lookup_id=('id')
@@ -60,6 +66,54 @@ class FeedbackFormView(APIView,mixins.UpdateModelMixin):
             return response.Response(serializer.errors)
 
 
+class FeedbackView(APIView):
+    lookup_id=('id')
+    def get(self, request,*args, **kwargs):
+        id=self.kwargs.get(self.lookup_id)
+        if id==0:
+            queryset = Feedback.objects.all()
+            serializer = FeedbackSerializer(queryset,many=True)
+            return response.Response(serializer.data)
+        else:
+            queryset= Feedback.objects.get(id=id)
+            serializer = FeedbackSerializer(queryset)
+            return response.Response(serializer.data)
+        
+
+class NominationsView(APIView):
+    lookup_id=('id')
+    lookup_company=('company')
+        
+
+    def put(self,request, *args, **kwargs):
+        id=self.kwargs.get(self.lookup_id)
+        company=self.kwargs.get(self.lookup_company)
+
+        # check nomination with the logged in user
+        form=Feedback.objects.get(Q(company_name=company) & Q(id=id))  
+        data=request.data
+
+        nominations=['peer_review','manager_review','hr_review','external_review']
+           
+        serializer = FeedbackSerializer(form,data=request.data,partial=True)
+        if serializer.is_valid():
+
+            # serializer.save()
+            for u in nominations:
+                user=UserProfile.objects.filter(id=int(data['nominations'][u]))
+                temp=dict(user.values()[0])
+                temp['nominations'][u]=serializer.data['employee_name']
+                print(temp['nominations'])
+                temp_Serializer=UserProfileSerializer(user[0],data=temp,partial=True)
+                if temp_Serializer.is_valid():
+                    print("yess")
+                    temp_Serializer.save()
+                else:
+                    return response.Response(temp_Serializer.errors)
+
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors)
 
 
 class EditFeedbackView(APIView):
@@ -82,13 +136,14 @@ class EditFeedbackView(APIView):
         company=self.kwargs.get(self.lookup_company)
         review_type=self.kwargs.get('type')
         
-        form=Feedback.objects.get(Q(company_name=company) & Q(id=id))
         data=request.data
-        
+
+        # check nomination with the logged in user
+        form=Feedback.objects.get(Q(company_name=company) & Q(id=id))     
+    
         data["status"]=form.status
         data["status"][review_type]="Completed"
-       
-        
+           
         serializer = FeedbackSerializer(form,data=request.data,partial=True)
         if serializer.is_valid():
 
@@ -153,4 +208,3 @@ class ReportView(APIView):
             writer.writerow(row)
         
         return resp
-       
