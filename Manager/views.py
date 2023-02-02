@@ -10,10 +10,10 @@ from Employee.serializers import *
 from django.http import HttpResponse
 from django.db.models import Q # Multi crteria queries
 # Charts
-import xlwings as xw
-import xlwt
-import pandas as pd
-import matplotlib.pyplot as plt  # pip install matplotlib
+# import xlwings as xw
+# import xlwt
+# import pandas as pd
+# import matplotlib.pyplot as plt  # pip install matplotlib
 
 
 
