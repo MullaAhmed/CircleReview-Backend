@@ -12,5 +12,6 @@ urlpatterns = [
     path('r-email/<int:id>/',views.RemainderEmailView.as_view()),
     path('report/<int:id>/',views.ReportView.as_view()),
     path('generatecsv/',views.GenerateCSVView.as_view()),
+    path('managerfeedbacks/<slug:name>/',views.ManagerView.as_view()),
     # path('chartreport/',views.ChartReviewView.as_view()),
 ]

@@ -305,3 +305,22 @@ class CloneFeedbackFormView(APIView):
         # return response.Response(serializer.data,status=401)
 
       # return response.Response({"message":"successfully cloned"},status=200)
+
+class ManagerView(APIView):
+    lookup_field=('name')
+    def get(self,request, *args, **kwargs):
+        name=self.kwargs.get(self.lookup_field)
+        queryset= Team.objects.filter(team_lead=name)
+        team_members=queryset[0].team_members
+        data=[]
+        for i in (list(team_members.all())):
+            user_id=i.id
+            feedback=Feedback.objects.filter(employee_name=i)         
+            serializer=FeedbackSerializer(feedback[0])
+            data.append(serializer.data)
+        
+
+        print(data)
+        
+        
+        return response.Response(data,status=200)
