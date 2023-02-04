@@ -80,24 +80,38 @@ class CSVtoUserProfile(APIView):
             data={
                 "user":row[0],
                 "email":row[1],
+                "company_name":row[10],
                 "name":row[2],
                 "team_name":row[3],
                 "dept_name":row[4],
                 "position":row[5],
-                "review_status":{
-                                "self_review":"Not assigned",
-                                "peer_review":"Not assigned",
-                                "manager_review":"Not assigned",
-                                "hr_review":"Not assigned",
-                                "external_review":"Not assigned"
+                 "review_status":{
+                                "self_review":"Pending",
+                                "peer_review":"Pending",
+                                "manager_review":"Pending",
+                                "hr_review":"Pending",
+                                "external_review":"Pending",
+            },
+                "related_people":{
+                                "peer_review":[UserProfile.objects.filter(email=str(i).strip())[0].id if UserProfile.objects.filter(email=str(i).strip()).exists() else 'ahmed.mce20@sot.pdpu.ac.in' for i in row[6].split(",")],
+                                "manager_review":[UserProfile.objects.filter(email=row[7])[0].id],
+                                "hr_review":[UserProfile.objects.filter(email=row[8])[0].id],
+                                "external_review":[UserProfile.objects.filter(email=str(i).strip())[0].id if UserProfile.objects.filter(email=str(i).strip()).exists() else 'ahmed.mce20@sot.pdpu.ac.in' for i in row[9].split(",")]
                                 },
-                "nominations":{}
+                "nominations":{
+                                "peer_review": [],
+                                "manager_review": [],
+                                "hr_review": [],
+                                "external_review": []
+                }
             }
-    
+            # print([UserProfile.objects.filter(email=x.strip()).exists() for x in row[6].split(",")])
 
             serializer=UserProfileSerializer(data=data)
             if serializer.is_valid():
-                print(serializer.validated_data)
-                serializer.save()
                 
-        return response.Response("done")
+                serializer.save()
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response(serializer.errors,status=400)               
+        

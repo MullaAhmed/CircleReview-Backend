@@ -9,7 +9,8 @@ class UserProfile(models.Model):
     name= models.CharField(max_length=50)
     team_name=models.CharField(max_length=50)
     dept_name=models.CharField(max_length=50)
-    position=models.CharField(max_length=50)
+    position=models.CharField(max_length=50) 
+    related_people=models.JSONField()
     review_status=models.JSONField()
     nominations=models.JSONField()
 

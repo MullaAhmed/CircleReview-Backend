@@ -97,12 +97,12 @@ class NominationsView(APIView):
            
         serializer = FeedbackSerializer(form,data=request.data,partial=True)
         if serializer.is_valid():
-
-            # serializer.save()
+            serializer.save()
+            
             for u in nominations:
                 user=UserProfile.objects.filter(id=int(data['nominations'][u]))
                 temp=dict(user.values()[0])
-                temp['nominations'][u]=serializer.data['employee_name']
+                temp['nominations'][u].append(serializer.data['employee_name'])
                 print(temp['nominations'])
                 temp_Serializer=UserProfileSerializer(user[0],data=temp,partial=True)
                 if temp_Serializer.is_valid():
@@ -110,7 +110,8 @@ class NominationsView(APIView):
                     temp_Serializer.save()
                 else:
                     return response.Response(temp_Serializer.errors,status=401)
-
+            
+            
             return response.Response(serializer.data,status=200)
         else:
             return response.Response(serializer.errors,status=401)
@@ -165,7 +166,7 @@ class RemainderEmailView(APIView):
         send_remainder_emails(serializers.data['people'],team_lead.email)
         
         return response.Response({"message":"successfully sent"},status=200)
-        
+
 
 class ReportView(APIView):
     lookup_field=('id')
@@ -200,11 +201,107 @@ class ReportView(APIView):
             row.append(data['company_name'])
             row.extend(list(dict(data['status']).values()))
             row.extend(list(dict(data['nominations']).values()))
-            row.extend([x['answer'] for x in (data['self_review']["questions"])])
-            row.extend([x['answer'] for x in (data['peer_review']["questions"])])
-            row.extend([x['answer'] for x in (data['manager_review']["questions"])])
-            row.extend([x['answer'] for x in (data['hr_review']["questions"])])
-            row.extend([x['answer'] for x in (data['external_review']["questions"])])
+            try:
+                row.extend([x['answer'] for x in (data['self_review']["questions"])])
+            except:
+                pass
+            try:
+                row.extend([x['answer'] for x in (data['peer_review']["questions"])])
+            except:
+                pass
+            try:
+                row.extend([x['answer'] for x in (data['manager_review']["questions"])])
+            except:
+                pass
+            try:
+                row.extend([x['answer'] for x in (data['hr_review']["questions"])])
+            except:
+                pass
+            try:
+                row.extend([x['answer'] for x in (data['external_review']["questions"])])
+            except:
+                pass
+        
             writer.writerow(row)
         
         return resp
+
+class GenerateCSVView(APIView):
+    
+
+    def get(self,request, *args, **kwargs):  
+        try:
+            resp=HttpResponse(content_type='text/csv')
+            print(request.data[0]["feedback_form"])
+            resp['Content-Disposition'] = 'attachment; filename="{}-{}.csv"'.format(request.data[0]["feedback_form"],request.data[0]["company_name"])
+    
+
+            writer=csv.writer(resp)
+
+            headings=['id','employee_name','feedback_form','company_name']
+            headings.extend([ "status_"+str(x) for x in list(dict(request.data[0]['status']).keys())])
+            headings.extend([ "nominee_"+str(x) for x in list(dict(request.data[0]['nominations']).keys())])
+            headings.extend([x['question'] for x in (request.data[0]['self_review']["questions"])])
+            headings.extend([x['question'] for x in (request.data[0]['peer_review']["questions"])])
+            headings.extend([x['question'] for x in (request.data[0]['manager_review']["questions"])])
+            headings.extend([x['question'] for x in (request.data[0]['hr_review']["questions"])])
+            headings.extend([x['question'] for x in (request.data[0]['external_review']["questions"])])
+
+            writer.writerow(headings)
+            for data in request.data:
+                row=[]
+                row.append(data['id'])
+                row.append(data['employee_name'])
+                row.append(data['feedback_form'])
+                row.append(data['company_name'])
+                row.extend(list(dict(data['status']).values()))
+                row.extend(list(dict(data['nominations']).values()))
+                
+                try:
+                    row.extend([x['answer'] for x in (data['self_review']["questions"])])
+                except:
+                    pass
+                try:
+                    row.extend([x['answer'] for x in (data['peer_review']["questions"])])
+                except:
+                    pass
+                try:
+                    row.extend([x['answer'] for x in (data['manager_review']["questions"])])
+                except:
+                    pass
+                try:
+                    row.extend([x['answer'] for x in (data['hr_review']["questions"])])
+                except:
+                    pass
+                try:
+                    row.extend([x['answer'] for x in (data['external_review']["questions"])])
+                except:
+                    pass
+                writer.writerow(row)
+            
+            return resp
+        
+        except:    
+            return response.Response({"message":"no data"},status=401)
+
+
+class CloneFeedbackFormView(APIView):
+    lookup_field=('id')
+    lookup_company=('company')
+
+    def post(self,request, *args, **kwargs):
+        id=self.kwargs.get(self.lookup_field)
+        company=self.kwargs.get(self.lookup_company)
+
+        queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
+        serializer = FeedbackFormSerializer(queryset)
+        save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
+        if save_serializer.is_valid():
+            save_serializer.save()
+            return response.Response({"message":"successfully cloned"},status=200)
+        else:
+            return response.Response(serializer.errors,status=401)
+        
+        # return response.Response(serializer.data,status=401)
+
+      # return response.Response({"message":"successfully cloned"},status=200)
