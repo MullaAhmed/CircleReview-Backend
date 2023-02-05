@@ -9,6 +9,7 @@ import csv
 from Employee.serializers import *
 from django.http import HttpResponse
 from django.db.models import Q # Multi crteria queries
+from cohesive.auth import AuthDetails
 # Charts
 # import xlwings as xw
 # import xlwt
@@ -23,62 +24,75 @@ class FeedbackFormView(APIView,mixins.UpdateModelMixin):
     lookup_id=('id')
     lookup_company=('company')
 
-    def get(self, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_id)
-        company=self.kwargs.get(self.lookup_company)
-
-        if id==0:
-            queryset = FeedbackForm.objects.filter(Q(company_name=company) & Q(status="Active"))
-            serializer = FeedbackFormSerializer(queryset,many=True)
-            return response.Response(serializer.data,status=200)
+    def get(self, request,*args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
-            serializer = FeedbackFormSerializer(queryset)
-            return response.Response(serializer.data,status=401)
+            id=self.kwargs.get(self.lookup_id)
+            company=self.kwargs.get(self.lookup_company)
+
+            if id==0:
+                queryset = FeedbackForm.objects.filter(Q(company_name=company) & Q(status="Active"))
+                serializer = FeedbackFormSerializer(queryset,many=True)
+                return response.Response(serializer.data,status=200)
+            else:
+                queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
+                serializer = FeedbackFormSerializer(queryset)
+                return response.Response(serializer.data,status=401)
 
     def post(self,request, *args, **kwargs):
-        data=request.data
-        
-        serializer = FeedbackFormSerializer(data=data)
-        
-        if serializer.is_valid():            
-            
-            obj=serializer.save()
-            
-            create_feedback(data,obj.id) #later async
-            send_email_team(data['people']) #later async
-
-            return response.Response(serializer.data,status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            return response.Response(serializer.errors,status=401)
+            data=request.data
+            
+            serializer = FeedbackFormSerializer(data=data)
+            
+            if serializer.is_valid():            
+                
+                obj=serializer.save()
+                
+                create_feedback(data,obj.id) #later async
+                send_email_team(data['people']) #later async
+
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response(serializer.errors,status=401)
 
 
     def put(self, request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_id)
-        company=self.kwargs.get(self.lookup_company)
-        form=FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
-        serializer = FeedbackFormSerializer(form,data=request.data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            
-            return response.Response(serializer.data,status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            return response.Response(serializer.errors,status=401)
+            id=self.kwargs.get(self.lookup_id)
+            company=self.kwargs.get(self.lookup_company)
+            form=FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
+            serializer = FeedbackFormSerializer(form,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response(serializer.errors,status=401)
 
 
 class FeedbackView(APIView):
+    
     lookup_id=('id')
     def get(self, request,*args, **kwargs):
-        id=self.kwargs.get(self.lookup_id)
-        if id==0:
-            queryset = Feedback.objects.all()
-            serializer = FeedbackSerializer(queryset,many=True)
-            return response.Response(serializer.data,status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            queryset= Feedback.objects.get(id=id)
-            serializer = FeedbackSerializer(queryset)
-            return response.Response(serializer.data,status=401)
-        
+            id=self.kwargs.get(self.lookup_id)
+            if id==0:
+                queryset = Feedback.objects.all()
+                serializer = FeedbackSerializer(queryset,many=True)
+                return response.Response(serializer.data,status=200)
+            else:
+                queryset= Feedback.objects.get(id=id)
+                serializer = FeedbackSerializer(queryset)
+                return response.Response(serializer.data,status=401)
+            
 
 class NominationsView(APIView):
     lookup_id=('id')
@@ -86,35 +100,38 @@ class NominationsView(APIView):
         
 
     def put(self,request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_id)
-        company=self.kwargs.get(self.lookup_company)
-
-        # check nomination with the logged in user
-        form=Feedback.objects.get(Q(company_name=company) & Q(id=id))  
-        data=request.data
-
-        nominations=['peer_review','manager_review','hr_review','external_review']
-           
-        serializer = FeedbackSerializer(form,data=request.data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            
-            for u in nominations:
-                user=UserProfile.objects.filter(id=int(data['nominations'][u]))
-                temp=dict(user.values()[0])
-                temp['nominations'][u].append(serializer.data['employee_name'])
-                print(temp['nominations'])
-                temp_Serializer=UserProfileSerializer(user[0],data=temp,partial=True)
-                if temp_Serializer.is_valid():
-                    print("yess")
-                    temp_Serializer.save()
-                else:
-                    return response.Response(temp_Serializer.errors,status=401)
-            
-            
-            return response.Response(serializer.data,status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            return response.Response(serializer.errors,status=401)
+            id=self.kwargs.get(self.lookup_id)
+            company=self.kwargs.get(self.lookup_company)
+
+            # check nomination with the logged in user
+            form=Feedback.objects.get(Q(company_name=company) & Q(id=id))  
+            data=request.data
+
+            nominations=['peer_review','manager_review','hr_review','external_review']
+            
+            serializer = FeedbackSerializer(form,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                
+                for u in nominations:
+                    user=UserProfile.objects.filter(id=int(data['nominations'][u]))
+                    temp=dict(user.values()[0])
+                    temp['nominations'][u].append(serializer.data['employee_name'])
+                    print(temp['nominations'])
+                    temp_Serializer=UserProfileSerializer(user[0],data=temp,partial=True)
+                    if temp_Serializer.is_valid():
+                        print("yess")
+                        temp_Serializer.save()
+                    else:
+                        return response.Response(temp_Serializer.errors,status=401)
+                
+                
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response(serializer.errors,status=401)
 
 
 class EditFeedbackView(APIView):
@@ -122,133 +139,90 @@ class EditFeedbackView(APIView):
     lookup_company=('company')
 
     def get(self, request,*args, **kwargs):
-        id=int(self.kwargs.get(self.lookup_id))
-        company=self.kwargs.get(self.lookup_company)
-        review_type=self.kwargs.get('type')
-        queryset=Feedback.objects.get(Q(company_name=company) & Q(id=id))
-        
-        
-        serializer = FeedbackSerializer(queryset)
-        return response.Response(serializer.data[review_type],status=200)
-        
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            id=int(self.kwargs.get(self.lookup_id))
+            company=self.kwargs.get(self.lookup_company)
+            review_type=self.kwargs.get('type')
+            queryset=Feedback.objects.get(Q(company_name=company) & Q(id=id))
+            
+            
+            serializer = FeedbackSerializer(queryset)
+            return response.Response(serializer.data[review_type],status=200)
+            
 
     def put(self,request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_id)
-        company=self.kwargs.get(self.lookup_company)
-        review_type=self.kwargs.get('type')
-        
-        data=request.data
-
-        # check nomination with the logged in user
-        form=Feedback.objects.get(Q(company_name=company) & Q(id=id))     
-    
-        data["status"]=form.status
-        data["status"][review_type]="Completed"
-           
-        serializer = FeedbackSerializer(form,data=request.data,partial=True)
-        if serializer.is_valid():
-
-            serializer.save()
-            return response.Response(serializer.data,status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            return response.Response(serializer.errors,status=401)
+            id=self.kwargs.get(self.lookup_id)
+            company=self.kwargs.get(self.lookup_company)
+            review_type=self.kwargs.get('type')
+            
+            data=request.data
+
+            # check nomination with the logged in user
+            form=Feedback.objects.get(Q(company_name=company) & Q(id=id))     
+        
+            data["status"]=form.status
+            data["status"][review_type]="Completed"
+            
+            serializer = FeedbackSerializer(form,data=request.data,partial=True)
+            if serializer.is_valid():
+
+                serializer.save()
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response(serializer.errors,status=401)
 
 
 class RemainderEmailView(APIView):
     lookup_field=('id')
 
     def post(self,request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_field)
-        form=FeedbackForm.objects.get(id=id)
-        team=Team.objects.get(team_name=form.team)
-        team_lead=UserProfile.objects.get(user=team.team_lead)
-        serializers = FeedbackFormSerializer(form)
-        send_remainder_emails(serializers.data['people'],team_lead.email)
-        
-        return response.Response({"message":"successfully sent"},status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            id=self.kwargs.get(self.lookup_field)
+            form=FeedbackForm.objects.get(id=id)
+            team=Team.objects.get(team_name=form.team)
+            team_lead=UserProfile.objects.get(user=team.team_lead)
+            serializers = FeedbackFormSerializer(form)
+            send_remainder_emails(serializers.data['people'],team_lead.email)
+            
+            return response.Response({"message":"successfully sent"},status=200)
 
 
 class ReportView(APIView):
     lookup_field=('id')
 
     def get(self,request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_field)
-        form=Feedback.objects.filter(feedback_form=id)
-        
-        serializer = FeedbackSerializer(form,many=True)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            id=self.kwargs.get(self.lookup_field)
+            form=Feedback.objects.filter(feedback_form=id)
+            
+            serializer = FeedbackSerializer(form,many=True)
 
-        resp=HttpResponse(content_type='text/csv')
-        resp['Content-Disposition'] = 'attachment; filename="{}-{}.csv"'.format(serializer.data[0]["feedback_form"],serializer.data[0]["company_name"])
-  
-
-        writer=csv.writer(resp)
-
-        headings=['id','employee_name','feedback_form','company_name']
-        headings.extend([ "status_"+str(x) for x in list(dict(serializer.data[0]['status']).keys())])
-        headings.extend([ "nominee_"+str(x) for x in list(dict(serializer.data[0]['nominations']).keys())])
-        headings.extend([x['question'] for x in (serializer.data[0]['self_review']["questions"])])
-        headings.extend([x['question'] for x in (serializer.data[0]['peer_review']["questions"])])
-        headings.extend([x['question'] for x in (serializer.data[0]['manager_review']["questions"])])
-        headings.extend([x['question'] for x in (serializer.data[0]['hr_review']["questions"])])
-        headings.extend([x['question'] for x in (serializer.data[0]['external_review']["questions"])])
-
-        writer.writerow(headings)
-        for data in serializer.data:
-            row=[]
-            row.append(data['id'])
-            row.append(data['employee_name'])
-            row.append(data['feedback_form'])
-            row.append(data['company_name'])
-            row.extend(list(dict(data['status']).values()))
-            row.extend(list(dict(data['nominations']).values()))
-            try:
-                row.extend([x['answer'] for x in (data['self_review']["questions"])])
-            except:
-                pass
-            try:
-                row.extend([x['answer'] for x in (data['peer_review']["questions"])])
-            except:
-                pass
-            try:
-                row.extend([x['answer'] for x in (data['manager_review']["questions"])])
-            except:
-                pass
-            try:
-                row.extend([x['answer'] for x in (data['hr_review']["questions"])])
-            except:
-                pass
-            try:
-                row.extend([x['answer'] for x in (data['external_review']["questions"])])
-            except:
-                pass
-        
-            writer.writerow(row)
-        
-        return resp
-
-class GenerateCSVView(APIView):
-    
-
-    def get(self,request, *args, **kwargs):  
-        try:
             resp=HttpResponse(content_type='text/csv')
-            print(request.data[0]["feedback_form"])
-            resp['Content-Disposition'] = 'attachment; filename="{}-{}.csv"'.format(request.data[0]["feedback_form"],request.data[0]["company_name"])
+            resp['Content-Disposition'] = 'attachment; filename="{}-{}.csv"'.format(serializer.data[0]["feedback_form"],serializer.data[0]["company_name"])
     
 
             writer=csv.writer(resp)
 
             headings=['id','employee_name','feedback_form','company_name']
-            headings.extend([ "status_"+str(x) for x in list(dict(request.data[0]['status']).keys())])
-            headings.extend([ "nominee_"+str(x) for x in list(dict(request.data[0]['nominations']).keys())])
-            headings.extend([x['question'] for x in (request.data[0]['self_review']["questions"])])
-            headings.extend([x['question'] for x in (request.data[0]['peer_review']["questions"])])
-            headings.extend([x['question'] for x in (request.data[0]['manager_review']["questions"])])
-            headings.extend([x['question'] for x in (request.data[0]['hr_review']["questions"])])
-            headings.extend([x['question'] for x in (request.data[0]['external_review']["questions"])])
+            headings.extend([ "status_"+str(x) for x in list(dict(serializer.data[0]['status']).keys())])
+            headings.extend([ "nominee_"+str(x) for x in list(dict(serializer.data[0]['nominations']).keys())])
+            headings.extend([x['question'] for x in (serializer.data[0]['self_review']["questions"])])
+            headings.extend([x['question'] for x in (serializer.data[0]['peer_review']["questions"])])
+            headings.extend([x['question'] for x in (serializer.data[0]['manager_review']["questions"])])
+            headings.extend([x['question'] for x in (serializer.data[0]['hr_review']["questions"])])
+            headings.extend([x['question'] for x in (serializer.data[0]['external_review']["questions"])])
 
             writer.writerow(headings)
-            for data in request.data:
+            for data in serializer.data:
                 row=[]
                 row.append(data['id'])
                 row.append(data['employee_name'])
@@ -256,7 +230,6 @@ class GenerateCSVView(APIView):
                 row.append(data['company_name'])
                 row.extend(list(dict(data['status']).values()))
                 row.extend(list(dict(data['nominations']).values()))
-                
                 try:
                     row.extend([x['answer'] for x in (data['self_review']["questions"])])
                 except:
@@ -277,12 +250,71 @@ class GenerateCSVView(APIView):
                     row.extend([x['answer'] for x in (data['external_review']["questions"])])
                 except:
                     pass
+            
                 writer.writerow(row)
             
             return resp
+
+class GenerateCSVView(APIView):
+    
+
+    def get(self,request, *args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:  
+            try:
+                resp=HttpResponse(content_type='text/csv')
+                print(request.data[0]["feedback_form"])
+                resp['Content-Disposition'] = 'attachment; filename="{}-{}.csv"'.format(request.data[0]["feedback_form"],request.data[0]["company_name"])
         
-        except:    
-            return response.Response({"message":"no data"},status=401)
+
+                writer=csv.writer(resp)
+
+                headings=['id','employee_name','feedback_form','company_name']
+                headings.extend([ "status_"+str(x) for x in list(dict(request.data[0]['status']).keys())])
+                headings.extend([ "nominee_"+str(x) for x in list(dict(request.data[0]['nominations']).keys())])
+                headings.extend([x['question'] for x in (request.data[0]['self_review']["questions"])])
+                headings.extend([x['question'] for x in (request.data[0]['peer_review']["questions"])])
+                headings.extend([x['question'] for x in (request.data[0]['manager_review']["questions"])])
+                headings.extend([x['question'] for x in (request.data[0]['hr_review']["questions"])])
+                headings.extend([x['question'] for x in (request.data[0]['external_review']["questions"])])
+
+                writer.writerow(headings)
+                for data in request.data:
+                    row=[]
+                    row.append(data['id'])
+                    row.append(data['employee_name'])
+                    row.append(data['feedback_form'])
+                    row.append(data['company_name'])
+                    row.extend(list(dict(data['status']).values()))
+                    row.extend(list(dict(data['nominations']).values()))
+                    
+                    try:
+                        row.extend([x['answer'] for x in (data['self_review']["questions"])])
+                    except:
+                        pass
+                    try:
+                        row.extend([x['answer'] for x in (data['peer_review']["questions"])])
+                    except:
+                        pass
+                    try:
+                        row.extend([x['answer'] for x in (data['manager_review']["questions"])])
+                    except:
+                        pass
+                    try:
+                        row.extend([x['answer'] for x in (data['hr_review']["questions"])])
+                    except:
+                        pass
+                    try:
+                        row.extend([x['answer'] for x in (data['external_review']["questions"])])
+                    except:
+                        pass
+                    writer.writerow(row)
+                
+                return resp
+            
+            except:    
+                return response.Response({"message":"no data"},status=401)
 
 
 class CloneFeedbackFormView(APIView):
@@ -290,18 +322,21 @@ class CloneFeedbackFormView(APIView):
     lookup_company=('company')
 
     def post(self,request, *args, **kwargs):
-        id=self.kwargs.get(self.lookup_field)
-        company=self.kwargs.get(self.lookup_company)
-
-        queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
-        serializer = FeedbackFormSerializer(queryset)
-        save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
-        if save_serializer.is_valid():
-            save_serializer.save()
-            return response.Response({"message":"successfully cloned"},status=200)
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
         else:
-            return response.Response(serializer.errors,status=401)
-        
+            id=self.kwargs.get(self.lookup_field)
+            company=self.kwargs.get(self.lookup_company)
+
+            queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
+            serializer = FeedbackFormSerializer(queryset)
+            save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
+            if save_serializer.is_valid():
+                save_serializer.save()
+                return response.Response({"message":"successfully cloned"},status=200)
+            else:
+                return response.Response(serializer.errors,status=401)
+            
         # return response.Response(serializer.data,status=401)
 
       # return response.Response({"message":"successfully cloned"},status=200)
@@ -309,18 +344,21 @@ class CloneFeedbackFormView(APIView):
 class ManagerView(APIView):
     lookup_field=('name')
     def get(self,request, *args, **kwargs):
-        name=self.kwargs.get(self.lookup_field)
-        queryset= Team.objects.filter(team_lead=name)
-        team_members=queryset[0].team_members
-        data=[]
-        for i in (list(team_members.all())):
-            user_id=i.id
-            feedback=Feedback.objects.filter(employee_name=i)         
-            serializer=FeedbackSerializer(feedback[0])
-            data.append(serializer.data)
-        
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            name=self.kwargs.get(self.lookup_field)
+            queryset= Team.objects.filter(team_lead=name)
+            team_members=queryset[0].team_members
+            data=[]
+            for i in (list(team_members.all())):
+                user_id=i.id
+                feedback=Feedback.objects.filter(employee_name=i)         
+                serializer=FeedbackSerializer(feedback[0])
+                data.append(serializer.data)
+            
 
-        print(data)
-        
-        
-        return response.Response(data,status=200)
+            print(data)
+            
+            
+            return response.Response(data,status=200)

@@ -20,7 +20,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 from dotenv import load_dotenv
 load_dotenv(BASE_DIR / '.env')
+
+# setup cohesive app
+import cohesive
+
+cohesive.api_base = str(os.environ.get("COHESIVE_BASE_URL"))
+cohesive.api_key = str(os.environ.get("COHESIVE_API_KEY"))
+cohesive.app_id = str(os.environ.get("COHESIVE_APP_ID"))
+cohesive.app_secret = str(os.environ.get("COHESIVE_APP_SECRET"))
 #############################
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -60,7 +69,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    
+    'cohesive_django.auth.AuthMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
