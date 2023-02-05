@@ -9,6 +9,7 @@ class FeedbackForm(models.Model):
     team=models.CharField(max_length=100) # Can be replaced by Department name as a foregin key
     status=models.CharField(max_length=100) #Active or Paused
     people=models.ManyToManyField(UserProfile,related_name='people')
+    completion_rate=models.IntegerField()
   
 
     self_review=models.JSONField(blank=True)

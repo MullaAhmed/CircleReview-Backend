@@ -168,6 +168,17 @@ class EditFeedbackView(APIView):
             data["status"]=form.status
             data["status"][review_type]="Completed"
             
+            feedback_form=FeedbackForm.objects.filter(id=form.feedback_form)
+        
+            completion_rate=feedback_form[0].completion_rate+(1/(4*len(feedback_form[0].people.all())))
+            temp=dict(feedback_form.values()[0])
+            temp['completion_rate']=completion_rate
+            
+            feedback_form_serializer=FeedbackFormSerializer(data=temp,partial=True)
+            
+            if feedback_form_serializer.is_valid():
+                feedback_form_serializer.save()
+
             serializer = FeedbackSerializer(form,data=request.data,partial=True)
             if serializer.is_valid():
 
