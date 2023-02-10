@@ -6,7 +6,7 @@ class FeedbackForm(models.Model):
     survey_name=models.CharField(max_length=100,default="Feedback Form")
     company_name=models.CharField(max_length=50)
     time=models.DateTimeField(auto_now_add=True)
-    team=models.CharField(max_length=100) # Can be replaced by Department name as a foregin key
+    
     status=models.CharField(max_length=100) #Active or Paused
     people=models.ManyToManyField(UserProfile,related_name='people')
     completion_rate=models.IntegerField()
@@ -25,10 +25,12 @@ class FeedbackForm(models.Model):
 class Feedback(models.Model):
     employee_name=models.ForeignKey(UserProfile,on_delete=models.CASCADE)
     company_name=models.CharField(max_length=50)
+    feedback_form=models.IntegerField() #id of form
+    manager_name=models.CharField(max_length=50)
+
+
     status=models.JSONField()
     nominations=models.JSONField()
-    feedback_form=models.IntegerField() #id of form
-
     self_review=models.JSONField()
     peer_review=models.JSONField()
     manager_review=models.JSONField()

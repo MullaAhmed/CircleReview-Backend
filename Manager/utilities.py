@@ -38,6 +38,7 @@ def create_feedback(og_data,id):
             "employee_name":i,
             "company_name":og_data['company_name'],
             "feedback_form":id,
+            "manager_name":UserProfile.objects.get(id=int(i)).related_people['manager'][0],
             
             "status":{
                 "self_review":"Pending",

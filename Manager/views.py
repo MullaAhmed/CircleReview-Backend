@@ -10,101 +10,144 @@ from Employee.serializers import *
 from django.http import HttpResponse
 from django.db.models import Q # Multi crteria queries
 from cohesive.auth import AuthDetails
-# Charts
-# import xlwings as xw
-# import xlwt
-# import pandas as pd
-# import matplotlib.pyplot as plt  # pip install matplotlib
-
-
-
 # Create your views here.
 
-class FeedbackFormView(APIView,mixins.UpdateModelMixin):
-    lookup_id=('id')
-    lookup_company=('company')
-
-    def get(self, request,*args, **kwargs):
-        if not isinstance(request.auth_details, AuthDetails):
-            return response.Response({"error": "no auth details found"}, status=401)
-        else:
-            id=self.kwargs.get(self.lookup_id)
-            company=self.kwargs.get(self.lookup_company)
-
-            if id==0:
-                queryset = FeedbackForm.objects.filter(Q(company_name=company) & Q(status="Active"))
-                serializer = FeedbackFormSerializer(queryset,many=True)
-                return response.Response(serializer.data,status=200)
-            else:
-                queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
-                serializer = FeedbackFormSerializer(queryset)
-                return response.Response(serializer.data,status=401)
+class FeedbackFormView(APIView):  
 
     def post(self,request, *args, **kwargs):
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
-            data=request.data
-            
-            serializer = FeedbackFormSerializer(data=data)
-            
-            if serializer.is_valid():            
+            if str(request.auth_details.role).lower()=="hr":
+
+                data={   
+
+        "survey_name":request.data['survey_name'],
+        "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
+        
+        "status":request.data['status'],
+        "people":request.data['people'],
+        "completion_rate":0,
+        
+        "self_review":request.data['self_review'],
+        "peer_review":request.data['peer_review'],
+        "manager_review":request.data['manager_review'],
+        "hr_review":request.data['hr_review'],
+        "external_review":request.data['external_review'],
+
+}
                 
-                obj=serializer.save()
+                serializer = FeedbackFormSerializer(data=data)
                 
-                create_feedback(data,obj.id) #later async
-                send_email_team(data['people']) #later async
+                if serializer.is_valid():            
+                    
+                    obj=serializer.save()
+                    
+                    create_feedback(data,obj.id) #later async
+                    send_email_team(data['people']) #later async
 
-                return response.Response(serializer.data,status=200)
-            else:
-                return response.Response(serializer.errors,status=401)
+                    return response.Response(serializer.data,status=200)
+                else:
+                    return response.Response(serializer.errors,status=401)
 
-
-    def put(self, request, *args, **kwargs):
-        if not isinstance(request.auth_details, AuthDetails):
-            return response.Response({"error": "no auth details found"}, status=401)
-        else:
-            id=self.kwargs.get(self.lookup_id)
-            company=self.kwargs.get(self.lookup_company)
-            form=FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
-            serializer = FeedbackFormSerializer(form,data=request.data,partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                
-                return response.Response(serializer.data,status=200)
-            else:
-                return response.Response(serializer.errors,status=401)
-
-
-class FeedbackView(APIView):
     
-    lookup_id=('id')
     def get(self, request,*args, **kwargs):
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
-            id=self.kwargs.get(self.lookup_id)
-            if id==0:
-                queryset = Feedback.objects.all()
-                serializer = FeedbackSerializer(queryset,many=True)
+            role=str(request.auth_details.role).lower()
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+           
+            if str(role)=="hr":
+                queryset = FeedbackForm.objects.filter(Q(company_name=company))
+                serializer = FeedbackFormSerializer(queryset,many=True)
+                return response.Response(serializer.data,status=200)
+            else:   
+                return response.Response({"message":"You dont have access"},status=401)
+
+
+
+class FeedbackDetailFormView(APIView):
+    lookup_field=('form_id')
+    def get(self, request,*args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            id=self.kwargs.get(self.lookup_field)
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+            queryset = FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
+            serializer = FeedbackFormSerializer(queryset)
+            return response.Response(serializer.data,status=200)
+    
+    def put(self, request,*args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            id=self.kwargs.get(self.lookup_field)
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+            queryset = FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
+            serializer = FeedbackFormSerializer(queryset,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
                 return response.Response(serializer.data,status=200)
             else:
-                queryset= Feedback.objects.get(id=id)
+                return response.Response(serializer.errors,status=401)
+
+
+class CloneFeedbackFormView(APIView):
+    lookup_field=('form_id')
+    
+
+    def post(self,request, *args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            if str(request.auth_details.role).lower()=="hr":
+                id=self.kwargs.get(self.lookup_field)
+                company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+
+                queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
+                serializer = FeedbackFormSerializer(queryset)
+                save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
+                if save_serializer.is_valid():
+                    save_serializer.save()
+                    return response.Response({"message":"successfully cloned"},status=200)
+                else:
+                    return response.Response(serializer.errors,status=401)
+            else:
+                return response.Response({"message":"You dont have access"},status=401)
+    
+
+class FeedbackView(APIView):
+    lookup_field=('form_id')
+    def get(self, request,*args, **kwargs):
+        if not isinstance(request.auth_details, AuthDetails):
+            return response.Response({"error": "no auth details found"}, status=401)
+        else:
+            role=str(request.auth_details.role).lower()
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+            id=self.kwargs.get(self.lookup_field)
+
+            if str(role)=="hr":
+                queryset = Feedback.objects.filter(Q(company_name=company) & Q(feedback_form=id))
+                serializer = FeedbackSerializer(queryset,many=True)
+                return response.Response(serializer.data,status=200)
+            elif str(role)=="manager":
+                manager_name= str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ", "")
+                queryset = Feedback.objects.filter(Q(company_name=company) & Q(manager_name=manager_name) & Q(feedback_form=id))
                 serializer = FeedbackSerializer(queryset)
                 return response.Response(serializer.data,status=401)
             
 
 class NominationsView(APIView):
-    lookup_id=('id')
-    lookup_company=('company')
-        
-
+    lookup_id=('feedback_id')
+    
     def put(self,request, *args, **kwargs):
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
             id=self.kwargs.get(self.lookup_id)
-            company=self.kwargs.get(self.lookup_company)
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
 
             # check nomination with the logged in user
             form=Feedback.objects.get(Q(company_name=company) & Q(id=id))  
@@ -135,30 +178,33 @@ class NominationsView(APIView):
 
 
 class EditFeedbackView(APIView):
-    lookup_id=('id')
-    lookup_company=('company')
+    lookup_id=('feedback_id')
 
     def get(self, request,*args, **kwargs):
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
+            
             id=int(self.kwargs.get(self.lookup_id))
-            company=self.kwargs.get(self.lookup_company)
-            review_type=self.kwargs.get('type')
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
             queryset=Feedback.objects.get(Q(company_name=company) & Q(id=id))
-            
-            
             serializer = FeedbackSerializer(queryset)
-            return response.Response(serializer.data[review_type],status=200)
-            
+
+            if (str(request.auth_details.role).lower()=="hr" 
+                or (dict(serializer.data)["manager_name"])==UserProfile.objects.filter(id=id).values()["manager_name"] 
+                or dict(serializer.data)["employee_name"]==str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ", "")):
+                return response.Response(serializer.data,status=200)
+            else:
+                return response.Response({"message":"You dont have access"},status=401)
 
     def put(self,request, *args, **kwargs):
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
             id=self.kwargs.get(self.lookup_id)
-            company=self.kwargs.get(self.lookup_company)
             review_type=self.kwargs.get('type')
+            company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
+            
             
             data=request.data
 
@@ -197,8 +243,8 @@ class RemainderEmailView(APIView):
         else:
             id=self.kwargs.get(self.lookup_field)
             form=FeedbackForm.objects.get(id=id)
-            team=Team.objects.get(team_name=form.team)
-            team_lead=UserProfile.objects.get(user=team.team_lead)
+            feedback=Feedback.objects.get(feedback_form=id)
+            team_lead=UserProfile.objects.get(name=feedback.manager_name)
             serializers = FeedbackFormSerializer(form)
             send_remainder_emails(serializers.data['people'],team_lead.email)
             
@@ -328,29 +374,6 @@ class GenerateCSVView(APIView):
                 return response.Response({"message":"no data"},status=401)
 
 
-class CloneFeedbackFormView(APIView):
-    lookup_field=('id')
-    lookup_company=('company')
-
-    def post(self,request, *args, **kwargs):
-        if not isinstance(request.auth_details, AuthDetails):
-            return response.Response({"error": "no auth details found"}, status=401)
-        else:
-            id=self.kwargs.get(self.lookup_field)
-            company=self.kwargs.get(self.lookup_company)
-
-            queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
-            serializer = FeedbackFormSerializer(queryset)
-            save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
-            if save_serializer.is_valid():
-                save_serializer.save()
-                return response.Response({"message":"successfully cloned"},status=200)
-            else:
-                return response.Response(serializer.errors,status=401)
-            
-        # return response.Response(serializer.data,status=401)
-
-      # return response.Response({"message":"successfully cloned"},status=200)
 
 class ManagerView(APIView):
     lookup_field=('name')

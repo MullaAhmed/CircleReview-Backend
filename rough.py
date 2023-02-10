@@ -1,6 +1,9 @@
-import pandas as pd
-df = pd.read_csv("https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv")
-
-# for i in range(df.shape[0]):
-#   /  row=df.iloc[i,:].values
-print(df.shape)
+AuthDetails=(
+user_id=92, 
+user_name='Ahmed mulla', 
+role='Employee', 
+workspace_id=5, 
+workspace_name='sledgehammer',
+instance_id=13, 
+current_period_started_at=8, 
+current_period_ends_at=None, is_in_trial=None)

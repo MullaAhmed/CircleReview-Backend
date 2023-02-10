@@ -1,7 +1,7 @@
 asgiref==3.6.0
+
 certifi==2022.12.7
 charset-normalizer==3.0.1
-git+https://github.com/getcohesive/marketplace-server-plugin-django.git@usage_tracking#egg=cohesive-marketplace-server-plugin-django
 contourpy==1.0.7
 cycler==0.11.0
 Django==4.1.5
