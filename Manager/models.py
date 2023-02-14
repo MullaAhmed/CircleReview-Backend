@@ -19,7 +19,7 @@ class FeedbackForm(models.Model):
     external_review=models.JSONField(blank=True)
 
     def __str__(self):
-        return f'{self.time}-{self.team}'
+        return f'{self.time}-{self.survey_name}'
 
 
 class Feedback(models.Model):

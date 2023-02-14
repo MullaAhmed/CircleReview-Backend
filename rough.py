@@ -1,9 +1,35 @@
-AuthDetails=(
-user_id=92, 
-user_name='Ahmed mulla', 
-role='Employee', 
-workspace_id=5, 
-workspace_name='sledgehammer',
-instance_id=13, 
-current_period_started_at=8, 
-current_period_ends_at=None, is_in_trial=None)
+# Time:  O(m * n)
+# Space: O(m * n)
+
+import collections
+
+
+
+def maxDistance(grid):
+       
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        q = collections.deque([(i, j) for i in range(len(grid))
+                                      for j in range(len(grid[0])) if grid[i][j] == 1])    
+        print(q)
+        if len(q) == len(grid)*len(grid[0]):
+            return -1
+        
+        level = -1
+        while q:
+            next_q = collections.deque()
+            while q:
+                x, y = q.popleft()
+                for dx, dy in directions:
+                    nx, ny = x+dx, y+dy
+                    if not (0 <= nx < len(grid) and 
+                            0 <= ny < len(grid[0]) and 
+                            grid[nx][ny] == 0):
+                        continue
+                    next_q.append((nx, ny))
+                    grid[nx][ny] = 1
+            q = next_q
+            level += 1
+        return level
+grid=[[1,0,1],[0,0,0],[1,0,1]]
+a=maxDistance(grid)
+print(a)

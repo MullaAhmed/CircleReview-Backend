@@ -11,31 +11,37 @@ from django.http import HttpResponse
 from django.db.models import Q # Multi crteria queries
 from cohesive.auth import AuthDetails
 # Create your views here.
+class test(APIView):
+    def get(self,request):
+        print(request.auth_details.role)
+        return response.Response({"message":"hello"},status=200)
 
 class FeedbackFormView(APIView):  
 
     def post(self,request, *args, **kwargs):
+        print(request.auth_details.role)
         if not isinstance(request.auth_details, AuthDetails):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
-            if str(request.auth_details.role).lower()=="hr":
-
+            
+                role=str(request.auth_details.role).lower() 
+                print(role)
                 data={   
 
-        "survey_name":request.data['survey_name'],
-        "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
-        
-        "status":request.data['status'],
-        "people":request.data['people'],
-        "completion_rate":0,
-        
-        "self_review":request.data['self_review'],
-        "peer_review":request.data['peer_review'],
-        "manager_review":request.data['manager_review'],
-        "hr_review":request.data['hr_review'],
-        "external_review":request.data['external_review'],
+                    "survey_name":request.data['survey_name'],
+                    "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
+                    
+                    "status":request.data['status'],
+                    "people":request.data['people'],
+                    "completion_rate":0,
+                    
+                    "self_review":request.data['self_review'],
+                    "peer_review":request.data['peer_review'],
+                    "manager_review":request.data['manager_review'],
+                    "hr_review":request.data['hr_review'],
+                    "external_review":request.data['external_review'],
 
-}
+            }
                 
                 serializer = FeedbackFormSerializer(data=data)
                 
@@ -106,7 +112,7 @@ class CloneFeedbackFormView(APIView):
                 id=self.kwargs.get(self.lookup_field)
                 company=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id)
 
-                queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id) & Q(status="Active"))
+                queryset= FeedbackForm.objects.get(Q(company_name=company) & Q(id=id))
                 serializer = FeedbackFormSerializer(queryset)
                 save_serializer = FeedbackFormSerializer(data=dict(serializer.data))
                 if save_serializer.is_valid():

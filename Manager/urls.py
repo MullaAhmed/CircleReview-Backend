@@ -3,8 +3,8 @@ from . import views
 
 
 urlpatterns = [
-    
     path('feedbackform/<int:form_id>/',views.FeedbackFormView.as_view()),
+    path('t/',views.test.as_view()),
     path('feedbackform/<int:form_id>/clone/',views.CloneFeedbackFormView.as_view()),
     path('feedback/<int:form_id>/all',views.FeedbackView.as_view()),
     path('feedback/<int:feedback_id>/<slug:type>/',views.EditFeedbackView.as_view()),

@@ -34,7 +34,7 @@ class UserProfileView(APIView):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
             data={
-                "email":request.auth_details["user_email"],
+                "email":request.auth_details.user_email,
                 "name":str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ", ""),
                 "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
                 "position":request.data["position"],
