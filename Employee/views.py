@@ -24,7 +24,7 @@ class UserProfileView(APIView):
                 return response.Response(serializer.data)
             
             else:
-                user=UserProfile.objects.filter(company_name=str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id))
+                user=UserProfile.objects.filter(cohesieve_workspace_id=str(request.auth_details.workspace_id))
                 serializer=UserProfileSerializer(user,many=True)
                 return response.Response(serializer.data,status=200)
 
