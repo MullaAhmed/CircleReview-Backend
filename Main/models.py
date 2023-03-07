@@ -7,7 +7,9 @@ class UserProfile(models.Model):
     name=models.CharField(max_length=50)
     phone_number=models.IntegerField(null=True)
     email=models.EmailField(max_length=50,unique=True,null=False)
-    
+    gender=models.CharField(max_length=50)
+
+
     employee_id= models.CharField(max_length=50)
     position=models.CharField(max_length=50) 
     manager=models.CharField(max_length=50)
@@ -17,11 +19,11 @@ class UserProfile(models.Model):
     doj=models.DateField(null=True)
     dob=models.DateField(null=True)
 
-    cohesieve_role=models.CharField(max_length=50)
-    cohesieve_user_id= models.IntegerField()
-    cohesieve_user_name=models.CharField(max_length=50)
-    cohesieve_workspace_id=models.IntegerField()
-    cohesieve_workspace_name=models.CharField(max_length=50)
+    cohesive_role=models.CharField(max_length=50)
+    cohesive_user_id= models.IntegerField()
+    cohesive_user_name=models.CharField(max_length=50)
+    cohesive_workspace_id=models.IntegerField()
+    cohesive_workspace_name=models.CharField(max_length=50)
 
     def __str__(self):
         return self.employee_id

@@ -23,7 +23,7 @@ class UserProfileView(APIView):
                 return response.Response(serializer.data)
             
             elif str(profile).lower()=="all":
-                user=UserProfile.objects.filter(cohesieve_workspace_id=str(request.auth_details.workspace_id)).all()
+                user=UserProfile.objects.filter(cohesive_workspace_id=str(request.auth_details.workspace_id)).all()
                 serializer=UserProfileSerializer(user,many=True)
                 return response.Response(serializer.data,status=200)
             
@@ -51,11 +51,11 @@ class UserProfileView(APIView):
                 "dob":request.data["dob"],
                 "doj":request.data["doj"],
 
-                "cohesieve_role":request.data["cohesieve_role"],
-                "cohesieve_user_id":request.data["cohesieve_user_id"],
-                "cohesieve_user_name":request.data["cohesieve_user_name"],
-                "cohesieve_workspace_id":request.data["cohesieve_workspace_id"],
-                "cohesieve_workspace_name":request.data["cohesieve_workspace_name"],
+                "cohesive_role":request.data["cohesive_role"],
+                "cohesive_user_id":request.data["cohesive_user_id"],
+                "cohesive_user_name":request.data["cohesive_user_name"],
+                "cohesive_workspace_id":request.data["cohesive_workspace_id"],
+                "cohesive_workspace_name":request.data["cohesive_workspace_name"],
                 
                 }
             
@@ -139,11 +139,11 @@ class CSVtoUserProfileView(APIView):
                 "dob":row[8],
                 "doj":row[9],
 
-                "cohesieve_role":row[10],
-                "cohesieve_user_id":row[11],
-                "cohesieve_user_name":row[12],
-                "cohesieve_workspace_id":row[13],
-                "cohesieve_workspace_name":row[14]
+                "cohesive_role":row[10],
+                "cohesive_user_id":row[11],
+                "cohesive_user_name":row[12],
+                "cohesive_workspace_id":row[13],
+                "cohesive_workspace_name":row[14]
                     
                     }
                 serializer=UserProfileSerializer(data=data)
