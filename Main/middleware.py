@@ -6,9 +6,9 @@ def proxy_authorization():
     "exp": 1876398251,
     "instance_id": 2,
     "role": "HR",
-    "user_email": "ahmedmulla1910@gmail.com",
-    "user_id": 1,
-    "user_name": "User 1",
+    "user_email": "ahmedmulla8008@gmail.com",
+    "user_id": 4,
+    "user_name": "User 4",
     "workspace_id": 1,
     "workspace_name": "Cohesive"
     }

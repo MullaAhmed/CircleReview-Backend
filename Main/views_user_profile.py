@@ -38,17 +38,18 @@ class UserProfileView(APIView):
             return response.Response({"error": "no auth details found"}, status=401)
         else:
             data={
-                "email":request.auth_details.user_email,
+                "name":request.data["name"],
                 "employee_id":str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ", ""),
-                "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
+                "email":request.auth_details.user_email,
+                "phone_number":request.data["phone_number"],
+
                 "position":request.data["position"],
                 "manager":Try_Except.get_manager(request.data["manager"]),
-
-                "name":request.data["name"],
+                "team_name":request.data["team_name"],
+                "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
+               
                 "dob":request.data["dob"],
-                "phone_number":request.data["phone_number"],
                 "doj":request.data["doj"],
-
 
                 "cohesieve_role":request.auth_details.role,
                 "cohesieve_user_id":request.auth_details.user_id,
@@ -125,23 +126,24 @@ class CSVtoUserProfileView(APIView):
                 row=(data.iloc[i,:]).values
                 data={
                 
-                    "email":row[0],
-                    "employee_id":row[1],
-                    "company_name":row[2],
-                    "position":row[3],
-                    "manager":str(row[4]),
+                "name":row[0],
+                "employee_id":row[1],
+                "email":row[2],
+                "phone_number":row[3],
 
-                    "name":row[5],
-                    "dob":row[6],
-                    "phone_number":row[7],
-                    "doj":row[8],
+                "position":row[4],
+                "manager":row[5],
+                "team_name":row[6],
+                "company_name":row[7],
+               
+                "dob":row[8],
+                "doj":row[9],
 
-
-                    "cohesieve_role":row[9],
-                    "cohesieve_user_id":row[10],
-                    "cohesieve_user_name":row[11],
-                    "cohesieve_workspace_id":row[12],
-                    "cohesieve_workspace_name":row[13],
+                "cohesieve_role":row[10],
+                "cohesieve_user_id":row[11],
+                "cohesieve_user_name":row[12],
+                "cohesieve_workspace_id":row[13],
+                "cohesieve_workspace_name":row[14]
                     
                     }
                 serializer=UserProfileSerializer(data=data)
