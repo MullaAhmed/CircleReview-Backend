@@ -3,16 +3,19 @@ from django.db import models
 # Create your models here.
 
 class UserProfile(models.Model):
+
+    name=models.CharField(max_length=50)
+    phone_number=models.IntegerField(null=True)
     email=models.EmailField(max_length=50,unique=True,null=False)
+    
     employee_id= models.CharField(max_length=50)
     position=models.CharField(max_length=50) 
     manager=models.CharField(max_length=50)
+    team_name=models.CharField(max_length=50)
     company_name=models.CharField(max_length=50,null=True)
-    name=models.CharField(max_length=50)
-    dob=models.DateField(null=True)
-    phone_number=models.IntegerField(null=True)
+    
     doj=models.DateField(null=True)
-
+    dob=models.DateField(null=True)
 
     cohesieve_role=models.CharField(max_length=50)
     cohesieve_user_id= models.IntegerField()
