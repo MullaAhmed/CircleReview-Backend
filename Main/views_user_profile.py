@@ -42,7 +42,8 @@ class UserProfileView(APIView):
                 "employee_id":request.data["employee_id"],
                 "email":request.data["email"],
                 "phone_number":request.data["phone_number"],
-
+                
+                "gender":request.data["gender"],
                 "position":request.data["position"],
                 "manager":Try_Except.get_manager(request.data["manager"]),
                 "team_name":request.data["team_name"],
