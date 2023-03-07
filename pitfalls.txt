@@ -2,3 +2,10 @@ Problems
 1. On cloning forms move to edit screen (to do)
 2. Add unpublish and end survey flow (to ask)
 4. completion_rate (to ask)
+
+if else check fontend
+testinng tomrrow
+write feed back flow
+add 
+
+write employee survey fetch api 

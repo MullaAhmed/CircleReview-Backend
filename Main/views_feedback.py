@@ -53,6 +53,7 @@ class EditFeedbackView(APIView):
             serializer = FeedbackSerializer(queryset,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
+                update_completion_rate(serializer.data["form_id"])
                 return response.Response(serializer.data,status=200)
             else:
                 return response.Response(serializer.errors,status=401)

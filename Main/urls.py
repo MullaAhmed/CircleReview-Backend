@@ -8,6 +8,7 @@ urlpatterns = [
     path('userprofile/<slug:profile>/',UserProfileView.as_view()),
     path('userrelation/<slug:relation>/',UserRelationView.as_view()),
     path('csvtouserprofile/',CSVtoUserProfileView.as_view()),
+   
     path('feedbackform/',FeedbackFormView.as_view()),
     path('feedbackform/<int:form_id>/',FeedbackDetailFormView.as_view()),
     path('feedbackform/<int:form_id>/clone/',CloneFeedbackFormView.as_view()),

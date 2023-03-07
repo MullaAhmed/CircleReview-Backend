@@ -63,6 +63,7 @@ class Feedback(models.Model):
     feedback_type=models.CharField(max_length=50) #self,peer,manager,direct_report,cross_functional
     company_name=models.CharField(max_length=50)
     form_id=models.IntegerField()
+    status=models.CharField(max_length=50,default="Pending") #Pending,Completed
     questions_answers=models.JSONField()
 
     def __str__(self):

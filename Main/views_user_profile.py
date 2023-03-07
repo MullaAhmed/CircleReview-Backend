@@ -39,23 +39,23 @@ class UserProfileView(APIView):
         else:
             data={
                 "name":request.data["name"],
-                "employee_id":str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ", ""),
-                "email":request.auth_details.user_email,
+                "employee_id":request.data["employee_id"],
+                "email":request.data["email"],
                 "phone_number":request.data["phone_number"],
 
                 "position":request.data["position"],
                 "manager":Try_Except.get_manager(request.data["manager"]),
                 "team_name":request.data["team_name"],
-                "company_name":str(request.auth_details.workspace_name)+"_"+str(request.auth_details.workspace_id),
+                "company_name":request.data["company_name"],
                
                 "dob":request.data["dob"],
                 "doj":request.data["doj"],
 
-                "cohesieve_role":request.auth_details.role,
-                "cohesieve_user_id":request.auth_details.user_id,
-                "cohesieve_user_name":request.auth_details.user_name,
-                "cohesieve_workspace_id":request.auth_details.workspace_id,
-                "cohesieve_workspace_name":request.auth_details.workspace_name,
+                "cohesieve_role":request.data["cohesieve_role"],
+                "cohesieve_user_id":request.data["cohesieve_user_id"],
+                "cohesieve_user_name":request.data["cohesieve_user_name"],
+                "cohesieve_workspace_id":request.data["cohesieve_workspace_id"],
+                "cohesieve_workspace_name":request.data["cohesieve_workspace_name"],
                 
                 }
             

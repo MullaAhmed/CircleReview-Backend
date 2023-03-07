@@ -37,7 +37,6 @@ def send_remainder_emails(people):
     
     send_mail( subject, message, email_from, recipient_list ) 
   
-
 def send_email_team(person_id):
     
         subject = 'Review Survey'
@@ -47,6 +46,15 @@ def send_email_team(person_id):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = [person.email, ]
         send_mail( subject, message, email_from, recipient_list )
+
+def update_completion_rate(id):
+    all_feedbacks=Feedback.objects.filter(form_id=id).count()
+    completed_feedbacks=Feedback.objects.filter(Q(form_id=id) & Q(status="Completed")).count()
+    feedback_form=FeedbackForm.objects.get(id=id)
+    feedback_form.completion_rate=(int(completed_feedbacks)/int(all_feedbacks))*100
+    serializer=FeedbackFormSerializer(feedback_form,data=feedback_form.__dict__)
+    if serializer.is_valid():
+        serializer.save()
 
 class Try_Except:
     def get_manager(manager_id):
