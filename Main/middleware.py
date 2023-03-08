@@ -5,7 +5,7 @@ def proxy_authorization():
     "current_period_started_at": 8,
     "exp": 1876398251,
     "instance_id": 2,
-    "role": "Employee",
+    "role": "HR",
     "user_email": "ahmedmulla8008@gmail.com",
     "user_id": 4,
     "user_name": "User 4",
