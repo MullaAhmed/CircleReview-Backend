@@ -47,7 +47,7 @@ class UserProfileView(APIView):
                 "position":request.data["position"],
                 "manager":Try_Except.get_manager(request.data["manager"]),
                 "team_name":request.data["team_name"],
-                "company_name":request.data["company_name"],
+                "company_name":str(request.data["company_name"]).lower(),
                
                 "dob":request.data["dob"],
                 "doj":request.data["doj"],
