@@ -13,7 +13,7 @@ def proxy_authorization():
     "workspace_name": "Cohesive"
     }
 
-    secret="b05a04aa337feb98b3984c596522b2533b54647898c2863022a352fa8156651c5a7e0c97c0db982d284981d33c814a356953f097dd9bcce838f9e98c26aea904"
+    secret="ef5c72677c299900f981d7da3d955c042931d97b58901b3cd1594ad591ede162e82d1edb9110023be82f7a856efd478969488984c87667aafdcec938cc59da61"
 
     encoded_jwt = jwt.encode(data,secret, algorithm="HS256")
     
