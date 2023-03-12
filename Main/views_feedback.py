@@ -24,7 +24,9 @@ class FeedbackView(APIView):
                 serializer = FeedbackSerializer(queryset,many=True)
                 return response.Response(serializer.data,status=200)
             else:
-                user_id=UserProfile.objects.get(email=request.auth_details.user_email).id
+                # print(request.auth_details.user_email)
+                user_id=UserProfile.objects.get(employee_id = str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ","")).id
+                print(user_id)
                 queryset=Feedback.objects.filter(Q(company_name=company)& Q(user_from=user_id))
                 serializer = FeedbackSerializer(queryset,many=True)
                 return response.Response(serializer.data,status=200)
