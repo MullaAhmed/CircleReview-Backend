@@ -74,6 +74,7 @@ class Feedback(models.Model):
 class FeedbackStatus(models.Model):
     user=models.ForeignKey(UserProfile,on_delete=models.CASCADE)
     form_id=models.ForeignKey(FeedbackForm,on_delete=models.DO_NOTHING)
+    form_name=models.CharField(max_length=50)
     status=models.CharField(max_length=50) #Pending,Completed
 
     def __str__(self):

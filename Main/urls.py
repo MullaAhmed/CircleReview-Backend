@@ -13,6 +13,7 @@ urlpatterns = [
     path('feedbackform/<int:form_id>/',FeedbackDetailFormView.as_view()),
     path('feedbackform/<int:form_id>/clone/',CloneFeedbackFormView.as_view()),
     path('feedback/all/<int:form_id>/',FeedbackView.as_view()),
+    # path('feedback/',UserFeedbackView.as_view()),
     path('feedback/<int:feedback_id>/',EditFeedbackView.as_view()),
 
     path('remainder-emails/',RemainderEmailView.as_view()),
