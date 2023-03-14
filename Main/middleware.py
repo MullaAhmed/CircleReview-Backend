@@ -9,8 +9,8 @@ def proxy_authorization():
     "user_email": "ahmedmulla8008@gmail.com",
     "user_id": 4,
     "user_name": "User 4",
-    "workspace_id": 1,
-    "workspace_name": "Cohesive"
+    "workspace_id": 5,
+    "workspace_name": "sledgehammer"
     }
 
     secret="ef5c72677c299900f981d7da3d955c042931d97b58901b3cd1594ad591ede162e82d1edb9110023be82f7a856efd478969488984c87667aafdcec938cc59da61"
