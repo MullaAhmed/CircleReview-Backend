@@ -88,6 +88,7 @@ def create_feedback(og_data,id):
     people=og_data["people"]
     relations=[]
     company_name=og_data["company_name"]
+    form_name=og_data["survey_name"]
     for p in people:
         
         person=UserProfile.objects.get(id=int(p))
@@ -95,19 +96,19 @@ def create_feedback(og_data,id):
         
         peers=Try_Except.get_peers(person.id,people)
         for peer in peers:
-            data=Feedback(user_from=peer.id,user_for=person.id,feedback_type="peer",company_name=company_name,form_id=id,questions_answers=og_data["peer_review"]["questions"])
+            data=Feedback(user_from=peer.id,user_for=person.id,feedback_type="peer",company_name=company_name,form_id=id,form_name=form_name,questions_answers=og_data["peer_review"]["questions"])
             if data not in relations:
                 relations.append(data)
         
        
         direct_reports=Try_Except.get_direct_reports(person.id,people)
         for direct in direct_reports:
-            data=Feedback(user_from=person.id,user_for=direct.id,feedback_type="direct_report",company_name=company_name,form_id=id,questions_answers=og_data["direct_report_review"]["questions"])
+            data=Feedback(user_from=person.id,user_for=direct.id,feedback_type="direct_report",company_name=company_name,form_id=id,form_name=form_name,questions_answers=og_data["direct_report_review"]["questions"])
             if data not in relations:
                 relations.append(data)
         manager=Try_Except.get_manager(person.manager)
         if manager!="None" and manager in people: 
-            data=Feedback(user_from=person.id,user_for=manager,feedback_type="manager",company_name=company_name,form_id=id,questions_answers=og_data["manager_review"]["questions"])
+            data=Feedback(user_from=person.id,user_for=manager,feedback_type="manager",company_name=company_name,form_id=id,form_name=form_name,questions_answers=og_data["manager_review"]["questions"])
             if data not in relations:
                 relations.append(data)
         
