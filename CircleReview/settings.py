@@ -63,7 +63,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     
    
-    'Main.middleware.ProxyAuthMiddleware',
+    #'Main.middleware.ProxyAuthMiddleware',
     
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
