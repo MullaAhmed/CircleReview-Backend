@@ -25,8 +25,9 @@ class FeedbackView(APIView):
                 return response.Response(serializer.data,status=200)
             else:
                 # print(request.auth_details.user_email)
+                # print(str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ",""))
                 user_id=UserProfile.objects.get(employee_id = str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ","")).id
-                print(user_id)
+                # print(user_id)
                 queryset=Feedback.objects.filter(Q(company_name=company)& Q(user_from=user_id))
                 serializer = FeedbackSerializer(queryset,many=True)
                 return response.Response(serializer.data,status=200)
@@ -44,8 +45,10 @@ class EditFeedbackView(APIView):
             queryset=Feedback.objects.get(Q(company_name=company) & Q(id=id))
             serializer = FeedbackSerializer(queryset)
 
+            print(request.auth_details)
+
             if (str(request.auth_details.role).lower()=="hr" 
-                or dict(serializer.data)["user_from"]==str(UserProfile.objects.get(email=request.auth_details.user_email).id)):
+                or dict(serializer.data)["user_from"]==str(UserProfile.objects.get(employee_id = str(request.auth_details.user_id)+"_"+str(request.auth_details.user_name).replace(" ","")).id)):
                 return response.Response(serializer.data,status=200)
             else:
                 return response.Response({"message":"You dont have access"},status=401)
